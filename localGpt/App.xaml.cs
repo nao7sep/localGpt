@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace _localGpt
+namespace localGpt
 {
     /// <summary>
     /// Interaction logic for App.xaml

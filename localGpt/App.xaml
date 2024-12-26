@@ -1,7 +1,7 @@
-﻿<Application x:Class="_localGpt.App"
+﻿<Application x:Class="localGpt.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:_localGpt"
+             xmlns:local="clr-namespace:localGpt"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
     </Application.Resources>
