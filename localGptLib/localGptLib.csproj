@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net9.0-windows</TargetFramework>
-        <Nullable>enable</Nullable>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <UseWPF>true</UseWPF>
+        <Nullable>enable</Nullable>
 
         <AssemblyName></AssemblyName>
         <AssemblyTitle></AssemblyTitle>
@@ -24,7 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\localGptLib\localGptLib.csproj" />
+        <ProjectReference Include="..\..\yyLib\yyLib\yyLib.csproj" />
     </ItemGroup>
 
 </Project>
