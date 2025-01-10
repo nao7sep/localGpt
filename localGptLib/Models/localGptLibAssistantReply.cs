@@ -1,7 +1,11 @@
-﻿namespace localGptLib
+﻿using System.Text.Json.Serialization;
+
+namespace localGptLib
 {
     public class localGptLibAssistantReply
     {
+        [JsonPropertyName ("type")]
+        [JsonConverter (typeof (localGptLibContentTypeJsonConverter))]
         public localGptLibContentType Type { get; set; }
 
         public string Content { get; set; }
