@@ -23,8 +23,4 @@
         <InformationalVersion></InformationalVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\localGptLib\localGptLib.csproj" />
-    </ItemGroup>
-
 </Project>
