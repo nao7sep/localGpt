@@ -6,8 +6,7 @@ A cross-platform desktop application (C# / .NET 8 + Avalonia UI) that lets users
 
 ## 1. Purpose and Vision
 
-localGpt is a brainstorming and specification-writing companion.
-It removes the need for a browser-based UI so that every session (and its attachments) can be version-controlled as plain files. The app delivers:
+localGpt is a brainstorming and specification-writing companion. It removes the need for a browser-based UI so that every session (and its attachments) can be version-controlled as plain files. The app delivers:
 
 - Omni-modal chat with GPT-4o (or any model listed in models.json) via the official OpenAI .NET SDK.
 - Self-contained operation—no Git commands, no cloud storage, no recording hardware; the user decides when and where to save.
@@ -35,73 +34,109 @@ It removes the need for a browser-based UI so that every session (and its attach
 
 ## 3. Domain Model
 
-```
-classDiagram
-    class SessionFile {
-        +Guid Id
-        +string Title
-        +string SystemPrompt
-        +List<Message> Messages
-        +List<ParameterSetting> Parameters
-        +AppStateMeta StateMeta
-    }
+### 3.1 Core Classes
 
-    class Message {
-        +Guid Id
-        +Role Role
-        +string Text
-        +DateTimeOffset Timestamp
-        +bool Archived
-        +List<IAttachment> Attachments
-        +string Model
-        +int PromptTokens
-        +int CompletionTokens
-        +double PromptCost
-        +double CompletionCost
-        +double TotalCost
-    }
+#### SessionFile
+The root container for a conversation session.
+- **Id**: Guid - Unique identifier
+- **Title**: string - User-friendly name for the session
+- **SystemPrompt**: string - Initial instructions for the AI
+- **Messages**: List<Message> - Collection of all messages in the session
+- **Parameters**: List<ParameterSetting> - Configuration parameters for the session
+- **StateMeta**: AppStateMeta - Metadata about the session state
 
-    enum Role {User; Assistant; System; Tool}
+#### Message
+Represents a single message in the conversation.
+- **Id**: Guid - Unique identifier
+- **Role**: Role - Who sent the message (User, Assistant, System, Tool)
+- **Text**: string - Content of the message
+- **Timestamp**: DateTimeOffset - When the message was created (UTC)
+- **Archived**: bool - Whether the message is excluded from context
+- **Attachments**: List<IAttachment> - Files attached to the message
+- **Model**: string - AI model used for this message
+- **PromptTokens**: int - Number of tokens in the prompt
+- **CompletionTokens**: int - Number of tokens in the completion
+- **PromptCost**: double - Cost of the prompt tokens
+- **CompletionCost**: double - Cost of the completion tokens
+- **TotalCost**: double - Total cost of the message
 
-    interface IAttachment {
-        <<interface>>
-        +Guid Id
-        +string FileName
-        +AttachmentType Type
-        +string RelativePath
-    }
+#### AppStateMeta
+Tracks aggregate statistics for the session.
+- **SelectedModel**: string - Currently selected AI model
+- **TotalPromptTokens**: int - Sum of all prompt tokens
+- **TotalCompletionTokens**: int - Sum of all completion tokens
+- **TotalPromptCost**: double - Sum of all prompt costs
+- **TotalCompletionCost**: double - Sum of all completion costs
+- **TotalCost**: double - Total cost of the session
 
-    enum AttachmentType {Image; Audio; Document; Other}
-    class ImageAttachment
-    class AudioAttachment
-    class DocumentAttachment
+### 3.2 Parameters and Models
 
-    class ParameterSetting {
-        +string Key
-        +string Value
-        +bool Enabled
-    }
+#### ParameterSetting
+Configurable parameter for the session.
+- **Key**: string - Parameter name
+- **Value**: string - Parameter value
+- **Enabled**: bool - Whether the parameter is active
 
-    class ModelInfo {
-        +string Name
-        +double? PromptPricePer1M
-        +double? CompletionPricePer1M
-        +bool IsPricingConfigured
-    }
+#### ModelInfo
+Information about an AI model.
+- **Name**: string - Model identifier
+- **PromptPricePer1M**: double? - Cost per million prompt tokens
+- **CompletionPricePer1M**: double? - Cost per million completion tokens
+- **IsPricingConfigured**: bool - Whether pricing is set up
 
-    class AppStateMeta {
-        +string SelectedModel
-        +int TotalPromptTokens
-        +int TotalCompletionTokens
-        +double TotalPromptCost
-        +double TotalCompletionCost
-        +double TotalCost
-    }
+### 3.3 Attachments
 
-    SessionFile "1" *-- "*" Message
-    Message "0..*" --> "0..*" IAttachment
-    SessionFile "1" o-- "*" ParameterSetting
-```
+#### IAttachment (interface)
+Common interface for all attachment types.
+- **Id**: Guid - Unique identifier
+- **FileName**: string - Original file name
+- **Type**: AttachmentType - Type of attachment
+- **RelativePath**: string - Path relative to session folder
+
+#### AttachmentType (enum)
+- **Image** - Image files (png, jpg, etc.)
+- **Audio** - Audio files (mp3, wav, etc.)
+- **Document** - Document files (pdf, docx, etc.)
+- **Other** - Other file types
+
+#### Concrete Attachment Types
+- **ImageAttachment** - Implements IAttachment for images
+- **AudioAttachment** - Implements IAttachment for audio
+- **DocumentAttachment** - Implements IAttachment for documents
+
+#### Role (enum)
+- **User** - Message from the human user
+- **Assistant** - Message from the AI assistant
+- **System** - System message (instructions)
+- **Tool** - Message from a tool (e.g., web search)
+
+### 3.4 Class Relationships
+
+1. **SessionFile to Message** (Composition, One-to-Many)
+   - A SessionFile contains multiple Messages
+   - Each Message belongs to exactly one SessionFile
+   - Messages cannot exist independently of their SessionFile
+
+2. **Message to IAttachment** (Association, Many-to-Many)
+   - Messages can reference multiple Attachments
+   - An Attachment can be referenced by multiple Messages
+   - This allows sharing attachments between messages
+
+3. **SessionFile to ParameterSetting** (Aggregation, One-to-Many)
+   - A SessionFile contains multiple ParameterSettings
+   - Each ParameterSetting belongs to one SessionFile
+   - Less strict ownership than composition
+
+4. **SessionFile to AppStateMeta** (Composition, One-to-One)
+   - A SessionFile contains exactly one AppStateMeta
+   - The AppStateMeta cannot exist without its SessionFile
+   - Strong ownership relationship
+
+5. **IAttachment to Concrete Attachments** (Implementation)
+   - ImageAttachment, AudioAttachment, and DocumentAttachment all implement the IAttachment interface
+   - Each provides type-specific functionality while sharing common properties
+
+### 3.5 Implementation Notes
 
 - Modern collection types (List<T>) are used instead of IList<T> for better performance and compatibility.
 - Timestamps use DateTimeOffset for round-trippable ISO-8601 values. All timestamps are stored in UTC internally, while local time may be used for display purposes.
