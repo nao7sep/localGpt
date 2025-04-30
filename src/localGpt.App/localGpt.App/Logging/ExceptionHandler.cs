@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using localGpt.App.Logging.Views;
 using System;
 using System.Threading.Tasks;
 
@@ -127,14 +128,9 @@ namespace localGpt.App.Logging
         {
             try
             {
-                var dialog = new Window
-                {
-                    Title = "Error",
-                    Width = 400,
-                    Height = 200,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Content = CreateErrorDialogContent(message)
-                };
+                var dialog = parentWindow != null
+                    ? new ErrorDialog(message, parentWindow)
+                    : new ErrorDialog(message);
 
                 if (parentWindow != null)
                 {
@@ -150,52 +146,6 @@ namespace localGpt.App.Logging
                 // If we can't show the error dialog, log the error
                 Logger.Error(ex, "Failed to show error dialog: {Message}", ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Creates the content for the error dialog.
-        /// </summary>
-        /// <param name="message">The error message to show</param>
-        /// <returns>The dialog content</returns>
-        private static Control CreateErrorDialogContent(string message)
-        {
-            var stackPanel = new StackPanel
-            {
-                Margin = new Avalonia.Thickness(10)
-            };
-
-            stackPanel.Children.Add(new TextBlock
-            {
-                Text = "An error occurred:",
-                FontWeight = Avalonia.Media.FontWeight.Bold,
-                Margin = new Avalonia.Thickness(0, 0, 0, 10)
-            });
-
-            stackPanel.Children.Add(new TextBlock
-            {
-                Text = message,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                Margin = new Avalonia.Thickness(0, 0, 0, 20)
-            });
-
-            var okButton = new Button
-            {
-                Content = "OK",
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Width = 80
-            };
-
-            okButton.Click += (sender, e) =>
-            {
-                if (sender is Button button && button.FindAncestorOfType<Window>() is Window window)
-                {
-                    window.Close();
-                }
-            };
-
-            stackPanel.Children.Add(okButton);
-
-            return stackPanel;
         }
     }
 }

@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:localGpt.App.Logging.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="localGpt.App.Logging.Views.ErrorDialog"
+        Title="Error"
+        Width="400" Height="200"
+        WindowStartupLocation="CenterOwner">
+
+    <Design.DataContext>
+        <vm:ErrorDialogViewModel/>
+    </Design.DataContext>
+
+    <StackPanel Margin="10">
+        <TextBlock Text="An error occurred:"
+                   FontWeight="Bold"
+                   Margin="0,0,0,10"/>
+
+        <TextBlock Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,20"/>
+
+        <Button Content="OK"
+                HorizontalAlignment="Center"
+                Width="80"
+                Click="OnOkButtonClick"/>
+    </StackPanel>
+</Window>

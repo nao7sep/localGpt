@@ -3,12 +3,17 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using localGpt.App.Logging;
 using System;
+using System.ComponentModel;
 
 namespace localGpt.App.Localization
 {
     /// <summary>
     /// Dialog for selecting a language.
     /// </summary>
+    /// <summary>
+    /// This class is obsolete. Use <see cref="Views.LanguageSelectionDialog"/> instead.
+    /// </summary>
+    [Obsolete("This class is obsolete. Use Views.LanguageSelectionDialog instead.")]
     public class LanguageSelectionDialog : Window
     {
         private ComboBox _languageComboBox = new ComboBox

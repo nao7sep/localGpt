@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using localGpt.App.Localization;
+using localGpt.App.Localization.Views;
 using localGpt.App.Logging;
 using System.Linq;
 
@@ -31,7 +32,7 @@ public partial class MainWindow : Window
             Logger.Information("Language settings menu item clicked");
 
             // Create and show the language selection dialog
-            var dialog = new LanguageSelectionDialog(this);
+            var dialog = new localGpt.App.Localization.Views.LanguageSelectionDialog(this);
             await dialog.ShowDialog(this);
 
             Logger.Information("Language selection dialog closed");
