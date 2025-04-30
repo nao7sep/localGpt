@@ -10,10 +10,11 @@ localGpt is a brainstorming and specification-writing companion.
 It removes the need for a browser-based UI so that every session (and its attachments) can be version-controlled as plain files. The app delivers:
 
 - Omni-modal chat with GPT-4o (or any model listed in models.json) via the official OpenAI .NET SDK.
+- Self-contained operation—no Git commands, no cloud storage, no recording hardware; the user decides when and where to save.
 - Precise context control—messages can be archived (excluded from prompts) or deleted/regenerated in bulk.
 - Transparent cost tracking—token counts and money spent are fixed on message creation and always visible.
 - Attachment-aware workflow—images, audio and documents travel with their session in a deterministic folder layout.
-- Self-contained operation—no Git commands, no cloud storage, no recording hardware; the user decides when and where to save.
+- Multilingual support—UI strings stored in language files with initial support for en-us and ja-jp.
 
 ---
 
@@ -23,9 +24,10 @@ It removes the need for a browser-based UI so that every session (and its attach
 |----------|---------|
 | Chat core | GPT-4o through Responses API; optional Web Search tool when the "Search" checkbox is on. |
 | Conversation management | Archive toggle; delete / regenerate from any user message → everything after it (incl. archived) is purged. |
-| Cost & tokens | Prompt/Completion token counts + costs are stored per message, summed live in the main window. Models without both prices are greyed-out and unselectable. |
 | Attachments | Thumbnails for images, icon + duration for audio, icon + name for other files. Saved under {sessionBasename}_files/. |
+| Cost & tokens | Prompt/Completion token counts + costs are stored per message, summed live in the main window. Models without both prices are greyed-out and unselectable. |
 | Full-text search | Instant search across active & archived messages and attachments' OCR / text. |
+| Localization | Language files for en-us (default) and ja-jp with configuration option to switch between them. |
 | HTML export (opt-in) | One-click, pretty, static reproduction of the whole conversation next to the JSON. |
 | Logging (debug) | Continuous ND-JSON stream of every request / token-stream event in logs/. |
 
@@ -39,8 +41,8 @@ classDiagram
         +Guid Id
         +string Title
         +string SystemPrompt
-        +IList~Message~ Messages
-        +IList~ParameterSetting~ Parameters
+        +List<Message> Messages
+        +List<ParameterSetting> Parameters
         +AppStateMeta StateMeta
     }
 
@@ -50,7 +52,7 @@ classDiagram
         +string Text
         +DateTimeOffset Timestamp
         +bool Archived
-        +IList~IAttachment~ Attachments
+        +List<IAttachment> Attachments
         +string Model
         +int PromptTokens
         +int CompletionTokens
@@ -60,6 +62,7 @@ classDiagram
     }
 
     enum Role {User; Assistant; System; Tool}
+
     interface IAttachment {
         <<interface>>
         +Guid Id
@@ -67,6 +70,7 @@ classDiagram
         +AttachmentType Type
         +string RelativePath
     }
+
     enum AttachmentType {Image; Audio; Document; Other}
     class ImageAttachment
     class AudioAttachment
@@ -80,8 +84,8 @@ classDiagram
 
     class ModelInfo {
         +string Name
-        +double? PromptPricePer1k
-        +double? CompletionPricePer1k
+        +double? PromptPricePer1M
+        +double? CompletionPricePer1M
         +bool IsPricingConfigured
     }
 
@@ -99,8 +103,8 @@ classDiagram
     SessionFile "1" o-- "*" ParameterSetting
 ```
 
-- All collections expose IList<T> to stay test-friendly and allow ObservableCollection later.
-- Timestamps use DateTimeOffset for round-trippable ISO-8601 values.
+- Modern collection types (List<T>) are used instead of IList<T> for better performance and compatibility.
+- Timestamps use DateTimeOffset for round-trippable ISO-8601 values. All timestamps are stored in UTC internally, while local time may be used for display purposes.
 - Costs are calculated once from the ModelInfo prices and never recomputed.
 
 ---
@@ -112,8 +116,9 @@ classDiagram
 | *.json | UTF-8, indented, SessionFile root | On Save / Save As |
 | {basename}_files/ | raw attachments | When first file attached |
 | models.json | Array<ModelInfo> | Comes with app; editable in "Model Manager" dialog |
+| localization/{lang-code}.json | Localization strings | Included with app (en-us, ja-jp) |
+| Optional *.htm | self-contained | When "Export HTML" toggled |
 | logs/{yyyyMMdd}.ndjson | ND-JSON events | Always, for debugging |
-| Optional *.html | self-contained | When "Export HTML" toggled |
 
 ---
 
@@ -122,21 +127,21 @@ classDiagram
 ### 5.1 Main Window (single session)
 
 ```
-┌ MenuBar ─────────────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────────────────────────┐
 │ File | Edit | View | Tools | Settings | Help                            │
-├──────────────────────────────────────────────────────────────────────────┤
+├─────────────────────────────────────────────────────────────────────────┤
 │ Model selector [Combo]   ☐ Search   │  Parameter list [+] [✎] [−]       │
-├──────────────────────────────────────────────────────────────────────────┤
+├─────────────────────────────────────────────────────────────────────────┤
 │                     User Input TextBox (multiline)  [Send]              │
-├──────────────────────────────────────────────────────────────────────────┤
-│ Non-Archived (left)           | Archived (right)                        │
-│  ────────────────             | ────────────────                        │
-│  • message card               |  • message card                         │
-│    text                       |    text                                 │
-│    thumbnails / icons         |    …                                    │
-│    tokens + cost              |                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-Status bar: ΣPromptTok / ΣCompTok | ΣPrompt$ / ΣComp$ | ΣTotal$
+├─────────────────────────────────────────────────────────────────────────┤
+│ Non-Archived (left)           │ Archived (right)                        │
+│  ────────────────             │ ────────────────                        │
+│  • message card               │  • message card                         │
+│    text                       │    text                                 │
+│    thumbnails / icons         │    …                                    │
+│    tokens + cost              │                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+  Total Prompt Tokens / Total Completion Tokens | Prompt Cost / Completion Cost | Total Cost
 ```
 
 Message cards scroll freely (CanContentScroll = false) so long answers are never clipped.
@@ -149,26 +154,28 @@ Message cards scroll freely (CanContentScroll = false) so long answers are never
 | Edit | Copy, Paste, Delete, Regenerate Ctrl+R, Undo/Redo (text box only) |
 | View | Toggle model/parameter panes, toggle meta info |
 | Tools | Full-text Search, Token-price Quick Chart, HTML Export |
-| Settings | Model Manager (add/edit prices) |
+| Settings | Model Manager (add/edit prices), Language (en-us/ja-jp) |
 | Help | About, Shortcuts, Open Config Folder |
 
 Shortcuts list is embedded in Help and mirrors the table given in the conversation.
 
 ### 5.3 Dialogs & Panels
 
-- Model Manager — data-grid bound to ModelInfo list; rows without both prices are shaded/disabled.
 - Parameter Panel — permanent; items grey when Enabled == false. (+ / edit / − buttons).
+- Model Manager — data-grid bound to ModelInfo list; rows without both prices are shaded/disabled.
+- Language Settings — allows switching between available language files (en-us, ja-jp).
 - Save As — initial filename comes from session Title → kebab-case ASCII. Titles typed in Japanese invoke automatic English suggestion via GPT.
 
 ---
 
 ## 6. Business Rules
 
-1. Saving occurs only on explicit Save / Save As or after a send/receive event. No file is generated on app start.
-2. Deletion / Regeneration cascades forward from the selected user message.
+1. Self-contained operation — no file is generated on app start; saving occurs only on explicit Save / Save As or after a send/receive event.
+2. Conversation management — deletion / regeneration cascades forward from the selected user message.
 3. Cost immutability — once a message is logged, its costs never change, even if model prices are edited later.
 4. Model choice gating — selector disables models lacking price data.
-5. Attachments location — always inside {basename}_files/; session directories are created lazily.
+5. Time handling — all timestamps are stored in UTC internally while displayed in local time where appropriate.
+6. Attachments location — always inside {basename}_files/; session directories are created lazily.
 
 ---
 
@@ -176,21 +183,23 @@ Shortcuts list is embedded in Help and mirrors the table given in the conversati
 
 | Layer | Library | Notes |
 |-------|---------|-------|
+| UI | Avalonia UI 11 | cross-platform, custom docking |
 | HTTP & DTO | OpenAI .NET prerelease | official Responses API client |
 | HTTP helper | Refit | declarative interfaces |
 | JSON | System.Text.Json | JsonSerializerOptions.Default + JsonPolymorphic for attachments |
-| UI | Avalonia UI 11 | cross-platform, custom docking |
 | Time | .NET DateTimeOffset | precision + round-trip |
+| Localization | Custom ResourceManager | loads strings from language JSON files |
 
 ---
 
 ## 8. Open Points (future versions)
 
-- OAuth-free local voice capture / camera input
-- Drag-and-drop between session windows
-- Token-level diff when regenerating
 - WYSIWYG layout for HTML export
 - Live token cost chart
+- Token-level diff when regenerating
+- Drag-and-drop between session windows
+- OAuth-free local voice capture / camera input
+- Additional language support beyond en-us and ja-jp
 
 ---
 
@@ -200,8 +209,16 @@ Shortcuts list is embedded in Help and mirrors the table given in the conversati
 
 ```json
 [
-  { "Name": "gpt-4o",  "PromptPricePer1k": 0.005, "CompletionPricePer1k": 0.015 },
-  { "Name": "gpt-4.1", "PromptPricePer1k": 0.002, "CompletionPricePer1k": 0.008 }
+    {
+        "Name": "gpt-4o",
+        "PromptPricePer1M": 5.00,
+        "CompletionPricePer1M": 15.00
+    },
+    {
+        "Name": "gpt-4.1",
+        "PromptPricePer1M": 2.00,
+        "CompletionPricePer1M": 8.00
+    }
 ]
 ```
 
@@ -209,15 +226,36 @@ Shortcuts list is embedded in Help and mirrors the table given in the conversati
 
 ```json
 {
-  "id": "b7da…",
-  "role": "assistant",
-  "text": "Sure, here's a summary …",
-  "timestamp": "2025-04-21T10:30:45Z",
-  "model": "gpt-4o",
-  "promptTokens": 120,
-  "completionTokens": 440,
-  "promptCost": 0.00060,
-  "completionCost": 0.00660
+    "id": "b7da…",
+    "role": "assistant",
+    "text": "Sure, here's a summary …",
+    "timestamp": "2025-04-21T10:30:45Z",
+    "model": "gpt-4o",
+    "promptTokens": 120,
+    "completionTokens": 440,
+    "promptCost": 0.00060,
+    "completionCost": 0.00660
+}
+```
+
+### C. Sample localization file (en-us.json)
+
+```json
+{
+    "app.title": "localGpt",
+    "menu.file": "File",
+    "menu.edit": "Edit",
+    "menu.view": "View",
+    "menu.tools": "Tools",
+    "menu.settings": "Settings",
+    "menu.help": "Help",
+    "button.send": "Send",
+    "label.search": "Search",
+    "status.totalPromptTokens": "Total Prompt Tokens",
+    "status.totalCompletionTokens": "Total Completion Tokens",
+    "status.promptCost": "Prompt Cost",
+    "status.completionCost": "Completion Cost",
+    "status.totalCost": "Total Cost"
 }
 ```
 
