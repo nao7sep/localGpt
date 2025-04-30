@@ -20,7 +20,7 @@ namespace localGpt.App.Localization.Views
         /// </summary>
         public LanguageSelectionDialog()
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Information("Creating language selection dialog");
                 InitializeComponent();
@@ -29,7 +29,12 @@ namespace localGpt.App.Localization.Views
 #endif
                 DataContext = new LanguageSelectionDialogViewModel();
                 Logger.Information("Language selection dialog created");
-            }, "LanguageSelectionDialog.Constructor");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error creating language selection dialog: {Message}", ex.Message);
+                throw;
+            }
         }
 
         /// <summary>
@@ -38,10 +43,15 @@ namespace localGpt.App.Localization.Views
         /// <param name="owner">The owner window</param>
         public LanguageSelectionDialog(Window owner) : this()
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            }, "LanguageSelectionDialog.Constructor", showToUser: true, parentWindow: owner);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error setting window startup location: {Message}", ex.Message);
+                throw;
+            }
         }
 
         private void InitializeComponent()
@@ -56,7 +66,7 @@ namespace localGpt.App.Localization.Views
         /// <param name="e">Event arguments</param>
         private void OnApplyButtonClick(object? sender, RoutedEventArgs e)
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 // Apply the selected language
                 ViewModel?.ApplyLanguage();
@@ -64,7 +74,12 @@ namespace localGpt.App.Localization.Views
                 // Close the dialog
                 Logger.Debug("Closing language selection dialog");
                 Close();
-            }, "LanguageSelectionDialog.OnApplyButtonClick", showToUser: true, parentWindow: this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error applying language selection: {Message}", ex.Message);
+                Application.Current.ShowErrorDialog(ex.Message, this);
+            }
         }
     }
 }

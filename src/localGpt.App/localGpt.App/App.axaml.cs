@@ -1,9 +1,11 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using localGpt.App.Localization;
 using localGpt.App.Logging;
+using localGpt.App.Logging.Views;
 using localGpt.App.Settings;
 using System;
 using System.IO;
@@ -80,10 +82,12 @@ public partial class App : Application
         if (e.ExceptionObject is Exception exception)
         {
             Logger.Fatal(exception, "Unhandled exception: {Message}", exception.Message);
+            this.ShowErrorDialog(exception.Message);
         }
         else
         {
             Logger.Fatal("Unhandled exception object: {Object}", e.ExceptionObject);
+            this.ShowErrorDialog("An unhandled exception occurred.");
         }
     }
 
@@ -93,6 +97,7 @@ public partial class App : Application
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         Logger.Fatal(e.Exception, "Unobserved task exception: {Message}", e.Exception.Message);
+        this.ShowErrorDialog(e.Exception.Message);
         e.SetObserved(); // Prevent the application from crashing
     }
 
@@ -102,6 +107,14 @@ public partial class App : Application
     private void OnDispatcherUnhandledException(object? sender, DispatcherUnhandledExceptionEventArgs e)
     {
         Logger.Fatal(e.Exception, "Unhandled UI exception: {Message}", e.Exception.Message);
+
+        Window? mainWindow = null;
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            mainWindow = desktop.MainWindow;
+        }
+
+        this.ShowErrorDialog(e.Exception.Message, mainWindow);
         e.Handled = true; // Prevent the application from crashing
     }
 

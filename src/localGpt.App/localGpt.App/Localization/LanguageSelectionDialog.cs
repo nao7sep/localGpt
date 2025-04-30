@@ -28,7 +28,7 @@ namespace localGpt.App.Localization
         /// <param name="owner">The owner window</param>
         public LanguageSelectionDialog(Window owner)
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Information("Creating language selection dialog");
 
@@ -83,7 +83,12 @@ namespace localGpt.App.Localization
                 Content = stackPanel;
 
                 Logger.Information("Language selection dialog created");
-            }, "LanguageSelectionDialog.Constructor", showToUser: true, parentWindow: owner);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error creating language selection dialog: {Message}", ex.Message);
+                Application.Current.ShowErrorDialog(ex.Message, owner);
+            }
         }
 
         /// <summary>
@@ -93,7 +98,7 @@ namespace localGpt.App.Localization
         /// <param name="e">Event arguments</param>
         private void OnApplyButtonClick(object? sender, EventArgs e)
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 // Set the selected language
                 if (_languageComboBox.SelectedItem is string language)
@@ -109,7 +114,12 @@ namespace localGpt.App.Localization
                 // Close the dialog
                 Logger.Debug("Closing language selection dialog");
                 Close();
-            }, "LanguageSelectionDialog.OnApplyButtonClick", showToUser: true, parentWindow: this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error applying language selection: {Message}", ex.Message);
+                Application.Current.ShowErrorDialog(ex.Message, this);
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ namespace localGpt.App.Configuration
         /// <returns>The application configuration</returns>
         private AppConfig LoadAppConfig()
         {
-            return ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Information("Loading application configuration");
 
@@ -83,7 +83,12 @@ namespace localGpt.App.Configuration
 
                 Logger.Information("Application configuration loaded successfully");
                 return config;
-            }, "ConfigurationManager.LoadAppConfig", new AppConfig());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error loading application configuration: {Message}", ex.Message);
+                return new AppConfig();
+            }
         }
 
         /// <summary>
@@ -91,7 +96,7 @@ namespace localGpt.App.Configuration
         /// </summary>
         public void SaveAppConfig()
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 if (_appConfig == null)
                 {
@@ -110,7 +115,11 @@ namespace localGpt.App.Configuration
                 File.WriteAllText(filePath, json);
 
                 Logger.Information("Application configuration saved successfully");
-            }, "ConfigurationManager.SaveAppConfig");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error saving application configuration: {Message}", ex.Message);
+            }
         }
 
         /// <summary>
@@ -120,11 +129,16 @@ namespace localGpt.App.Configuration
         /// <returns>The configuration section</returns>
         public IConfigurationSection GetSection(string key)
         {
-            return ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Debug("Getting configuration section: {Key}", key);
                 return _configuration.GetSection(key);
-            }, "ConfigurationManager.GetSection", _configuration.GetSection(string.Empty));
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error getting configuration section {Key}: {Message}", key, ex.Message);
+                return _configuration.GetSection(string.Empty);
+            }
         }
 
         /// <summary>
@@ -136,11 +150,16 @@ namespace localGpt.App.Configuration
         /// <returns>The configuration value or the default value if the key is not found</returns>
         public T GetValue<T>(string key, T defaultValue)
         {
-            return ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Debug("Getting configuration value: {Key}", key);
                 return _configuration.GetValue<T>(key, defaultValue);
-            }, "ConfigurationManager.GetValue", defaultValue);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error getting configuration value {Key}: {Message}", key, ex.Message);
+                return defaultValue;
+            }
         }
     }
 }

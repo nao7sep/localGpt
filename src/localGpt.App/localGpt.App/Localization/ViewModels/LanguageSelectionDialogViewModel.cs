@@ -41,7 +41,7 @@ namespace localGpt.App.Localization.ViewModels
         /// </summary>
         public LanguageSelectionDialogViewModel()
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Information("Creating language selection dialog view model");
 
@@ -57,7 +57,12 @@ namespace localGpt.App.Localization.ViewModels
                 Logger.Debug("Current language selected: {Language}", SelectedLanguage);
 
                 Logger.Information("Language selection dialog view model created");
-            }, "LanguageSelectionDialogViewModel.Constructor");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error creating language selection dialog view model: {Message}", ex.Message);
+                throw;
+            }
         }
 
         /// <summary>
@@ -65,7 +70,7 @@ namespace localGpt.App.Localization.ViewModels
         /// </summary>
         public void ApplyLanguage()
         {
-            ExceptionHandler.Execute(() =>
+            try
             {
                 // Set the selected language
                 if (!string.IsNullOrEmpty(SelectedLanguage))
@@ -77,7 +82,12 @@ namespace localGpt.App.Localization.ViewModels
                 {
                     Logger.Warning("No language selected");
                 }
-            }, "LanguageSelectionDialogViewModel.ApplyLanguage");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error applying language: {Message}", ex.Message);
+                throw;
+            }
         }
 
         /// <summary>

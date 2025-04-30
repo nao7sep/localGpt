@@ -34,7 +34,7 @@ namespace localGpt.App.Localization
         /// <returns>Async task</returns>
         public async Task InitializeAsync(string localizationDirectory)
         {
-            await ExceptionHandler.ExecuteAsync(async () =>
+            try
             {
                 Logger.Information("Initializing localization from directory: {Directory}", localizationDirectory);
 
@@ -67,7 +67,12 @@ namespace localGpt.App.Localization
                 Logger.Information("Localization initialized with {Count} languages: {Languages}",
                     _languageResources.Count,
                     string.Join(", ", _languageResources.Keys));
-            }, "LocalizationManager.InitializeAsync");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error initializing localization: {Message}", ex.Message);
+                throw;
+            }
         }
 
         /// <summary>
@@ -77,7 +82,7 @@ namespace localGpt.App.Localization
         /// <returns>Async task</returns>
         private async Task CreateDefaultLanguageFilesAsync(string localizationDirectory)
         {
-            await ExceptionHandler.ExecuteAsync(async () =>
+            try
             {
                 // Create en-us.json
                 var enUsPath = Path.Combine(localizationDirectory, "en-us.json");
@@ -92,7 +97,12 @@ namespace localGpt.App.Localization
                 Logger.Information("Creating default Japanese language file: {Path}", jaJpPath);
                 await File.WriteAllTextAsync(jaJpPath, JsonSerializer.Serialize(jaJpStrings, new JsonSerializerOptions { WriteIndented = true }));
                 _languageResources["ja-jp"] = jaJpStrings;
-            }, "LocalizationManager.CreateDefaultLanguageFilesAsync");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error creating default language files: {Message}", ex.Message);
+                throw;
+            }
         }
 
         /// <summary>
@@ -103,7 +113,7 @@ namespace localGpt.App.Localization
         /// <returns>Async task</returns>
         private async Task LoadLanguageFileAsync(string languageCode, string filePath)
         {
-            await ExceptionHandler.ExecuteAsync(async () =>
+            try
             {
                 Logger.Information("Loading language file: {Path} for language: {Language}", filePath, languageCode);
                 var json = await File.ReadAllTextAsync(filePath);
@@ -118,7 +128,13 @@ namespace localGpt.App.Localization
                 {
                     Logger.Warning("No resources found in language file: {Path}", filePath);
                 }
-            }, $"LocalizationManager.LoadLanguageFileAsync({languageCode})");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error loading language file {Path} for language {Language}: {Message}",
+                    filePath, languageCode, ex.Message);
+                throw;
+            }
         }
 
         /// <summary>
@@ -128,7 +144,7 @@ namespace localGpt.App.Localization
         /// <returns>Localized string or key if not found</returns>
         public string GetString(string key)
         {
-            return ExceptionHandler.Execute(() =>
+            try
             {
                 // Try to get the string from the current language
                 if (_languageResources.TryGetValue(_currentLanguage, out var resources) &&
@@ -149,7 +165,12 @@ namespace localGpt.App.Localization
                 // Return the key if the string is not found in any language
                 Logger.Warning("String not found in any language for key: {Key}", key);
                 return key;
-            }, "LocalizationManager.GetString", key);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error getting string for key {Key}: {Message}", key, ex.Message);
+                return key;
+            }
         }
 
         /// <summary>
@@ -159,7 +180,7 @@ namespace localGpt.App.Localization
         /// <returns>True if the language was set successfully, false otherwise</returns>
         public bool SetLanguage(string languageCode)
         {
-            return ExceptionHandler.Execute(() =>
+            try
             {
                 if (_languageResources.ContainsKey(languageCode))
                 {
@@ -172,7 +193,12 @@ namespace localGpt.App.Localization
 
                 Logger.Warning("Attempted to set unsupported language: {Language}", languageCode);
                 return false;
-            }, "LocalizationManager.SetLanguage", false);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error setting language to {Language}: {Message}", languageCode, ex.Message);
+                return false;
+            }
         }
 
         /// <summary>

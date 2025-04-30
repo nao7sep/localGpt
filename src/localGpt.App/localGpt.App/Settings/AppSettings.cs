@@ -64,7 +64,7 @@ namespace localGpt.App.Settings
         /// <returns>The loaded settings or default settings if the file doesn't exist.</returns>
         private static AppSettings Load()
         {
-            return ExceptionHandler.Execute(() =>
+            try
             {
                 Logger.Information("Loading user settings from: {Path}", SettingsFilePath);
 
@@ -93,7 +93,12 @@ namespace localGpt.App.Settings
                     Language = appConfig.AppSettings.DefaultLanguage,
                     LastSelectedModel = appConfig.AppSettings.DefaultModel
                 };
-            }, "AppSettings.Load", new AppSettings());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error loading user settings: {Message}", ex.Message);
+                return new AppSettings();
+            }
         }
 
         /// <summary>
@@ -102,7 +107,7 @@ namespace localGpt.App.Settings
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task SaveAsync()
         {
-            await ExceptionHandler.ExecuteAsync(async () =>
+            try
             {
                 Logger.Information("Saving user settings to: {Path}", SettingsFilePath);
 
@@ -117,7 +122,11 @@ namespace localGpt.App.Settings
                 await File.WriteAllTextAsync(SettingsFilePath, json);
 
                 Logger.Information("User settings saved successfully");
-            }, "AppSettings.SaveAsync");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error saving user settings: {Message}", ex.Message);
+            }
         }
     }
 }
