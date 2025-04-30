@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
+using localGpt.App.Logging;
 using System;
 
 namespace localGpt.App.Localization
@@ -18,7 +19,11 @@ namespace localGpt.App.Localization
         /// <returns>Localized string</returns>
         public static string Localize(this string key)
         {
-            return LocalizationManager.Instance.GetString(key);
+            return ExceptionHandler.Execute(() =>
+            {
+                Logger.Debug("Localizing key: {Key}", key);
+                return LocalizationManager.Instance.GetString(key);
+            }, "LocalizationExtensions.Localize", key);
         }
     }
 
@@ -39,13 +44,18 @@ namespace localGpt.App.Localization
         /// <returns>Localized string</returns>
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            // Create a binding that updates when the language changes
-            return new Binding
+            return ExceptionHandler.Execute(() =>
             {
-                Source = LocalizationManager.Instance,
-                Path = "CurrentLanguage", // This property doesn't matter, we just need something to trigger the binding
-                Converter = new LocalizationConverter(Key)
-            };
+                Logger.Debug("Creating localization binding for key: {Key}", Key);
+
+                // Create a binding that updates when the language changes
+                return new Binding
+                {
+                    Source = LocalizationManager.Instance,
+                    Path = "CurrentLanguage", // This property doesn't matter, we just need something to trigger the binding
+                    Converter = new LocalizationConverter(Key)
+                };
+            }, "LocalizeExtension.ProvideValue", new Binding());
         }
     }
 
@@ -75,7 +85,11 @@ namespace localGpt.App.Localization
         /// <returns>Converted value</returns>
         public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
         {
-            return LocalizationManager.Instance.GetString(_key);
+            return ExceptionHandler.Execute(() =>
+            {
+                Logger.Debug("Converting localization for key: {Key}", _key);
+                return LocalizationManager.Instance.GetString(_key);
+            }, "LocalizationConverter.Convert", _key);
         }
 
         /// <summary>
@@ -88,7 +102,11 @@ namespace localGpt.App.Localization
         /// <returns>Converted value</returns>
         public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return ExceptionHandler.Execute<object?>(() =>
+            {
+                Logger.Warning("ConvertBack called on LocalizationConverter which is not implemented");
+                throw new NotImplementedException("LocalizationConverter.ConvertBack is not implemented");
+            }, "LocalizationConverter.ConvertBack", null);
         }
     }
 }

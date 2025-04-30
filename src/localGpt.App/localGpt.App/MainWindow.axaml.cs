@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using localGpt.App.Localization;
+using localGpt.App.Logging;
 using System.Linq;
 
 namespace localGpt.App;
@@ -10,7 +11,12 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        InitializeComponent();
+        ExceptionHandler.Execute(() =>
+        {
+            Logger.Information("Initializing MainWindow");
+            InitializeComponent();
+            Logger.Information("MainWindow initialized");
+        }, "MainWindow.Constructor");
     }
 
     /// <summary>
@@ -20,8 +26,15 @@ public partial class MainWindow : Window
     /// <param name="e">Event arguments</param>
     private async void OnLanguageSettingsClick(object sender, RoutedEventArgs e)
     {
-        // Create and show the language selection dialog
-        var dialog = new LanguageSelectionDialog(this);
-        await dialog.ShowDialog(this);
+        await ExceptionHandler.ExecuteAsync(async () =>
+        {
+            Logger.Information("Language settings menu item clicked");
+
+            // Create and show the language selection dialog
+            var dialog = new LanguageSelectionDialog(this);
+            await dialog.ShowDialog(this);
+
+            Logger.Information("Language selection dialog closed");
+        }, "MainWindow.OnLanguageSettingsClick", showToUser: true, parentWindow: this);
     }
 }

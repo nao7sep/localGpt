@@ -1,3 +1,4 @@
+using localGpt.App.Logging;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -46,22 +47,30 @@ namespace localGpt.App.Settings
         /// <returns>The loaded settings or default settings if the file doesn't exist.</returns>
         private static AppSettings Load()
         {
-            try
+            return ExceptionHandler.Execute(() =>
             {
+                Logger.Information("Loading application settings from: {Path}", SettingsFilePath);
+
                 if (File.Exists(SettingsFilePath))
                 {
                     var json = File.ReadAllText(SettingsFilePath);
                     var settings = JsonSerializer.Deserialize<AppSettings>(json);
-                    return settings ?? new AppSettings();
-                }
-            }
-            catch (Exception ex)
-            {
-                // In a real application, we would log this error
-                Console.WriteLine($"Error loading settings: {ex.Message}");
-            }
 
-            return new AppSettings();
+                    if (settings != null)
+                    {
+                        Logger.Information("Settings loaded successfully");
+                        return settings;
+                    }
+
+                    Logger.Warning("Settings file exists but could not be deserialized");
+                }
+                else
+                {
+                    Logger.Information("Settings file not found, using defaults");
+                }
+
+                return new AppSettings();
+            }, "AppSettings.Load", new AppSettings());
         }
 
         /// <summary>
@@ -70,22 +79,22 @@ namespace localGpt.App.Settings
         /// <returns>A task representing the asynchronous operation.</returns>
         public async Task SaveAsync()
         {
-            try
+            await ExceptionHandler.ExecuteAsync(async () =>
             {
+                Logger.Information("Saving application settings to: {Path}", SettingsFilePath);
+
                 // Ensure the directory exists
                 if (!Directory.Exists(SettingsDirectory))
                 {
+                    Logger.Information("Creating settings directory: {Directory}", SettingsDirectory);
                     Directory.CreateDirectory(SettingsDirectory);
                 }
 
                 var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(SettingsFilePath, json);
-            }
-            catch (Exception ex)
-            {
-                // In a real application, we would log this error
-                Console.WriteLine($"Error saving settings: {ex.Message}");
-            }
+
+                Logger.Information("Settings saved successfully");
+            }, "AppSettings.SaveAsync");
         }
     }
 }
