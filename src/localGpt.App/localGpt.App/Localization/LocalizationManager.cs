@@ -1,4 +1,6 @@
+using localGpt.App.Configuration;
 using localGpt.App.Logging;
+using localGpt.App.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +17,7 @@ namespace localGpt.App.Localization
     {
         private static LocalizationManager? _instance;
         private readonly Dictionary<string, Dictionary<string, string>> _languageResources = new();
-        private string _currentLanguage = "en-us"; // Default language
+        private string _currentLanguage = ""; // Will be set during initialization
 
         // Singleton pattern
         public static LocalizationManager Instance => _instance ??= new LocalizationManager();
@@ -57,6 +59,11 @@ namespace localGpt.App.Localization
                     await CreateDefaultLanguageFilesAsync(localizationDirectory);
                 }
 
+                // Set the current language from user settings or app config
+                var defaultLanguage = ConfigurationManager.Instance.AppConfig.AppSettings.DefaultLanguage;
+                _currentLanguage = localGpt.App.Settings.AppSettings.Instance.EffectiveLanguage;
+
+                Logger.Information("Current language set to: {Language}", _currentLanguage);
                 Logger.Information("Localization initialized with {Count} languages: {Languages}",
                     _languageResources.Count,
                     string.Join(", ", _languageResources.Keys));

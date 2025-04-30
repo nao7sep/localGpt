@@ -1,3 +1,4 @@
+using localGpt.App.Configuration;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -22,16 +23,24 @@ namespace localGpt.App.Logging
 
             try
             {
+                // Get logging settings from configuration
+                var config = ConfigurationManager.Instance.AppConfig;
+                var loggingSettings = config.Logging;
+
+                // Parse minimum log level
+                var minimumLevel = ParseLogLevel(loggingSettings.MinimumLevel);
+
                 // Create logs directory if it doesn't exist
-                var logsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
-                if (!Directory.Exists(logsDirectory))
+                var logFilePath = loggingSettings.LogFilePath;
+                var logsDirectory = Path.GetDirectoryName(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFilePath));
+                if (!string.IsNullOrEmpty(logsDirectory) && !Directory.Exists(logsDirectory))
                 {
                     Directory.CreateDirectory(logsDirectory);
                 }
 
                 // Configure Serilog
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Debug()
+                var loggerConfiguration = new LoggerConfiguration()
+                    .MinimumLevel.Is(minimumLevel)
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
@@ -39,15 +48,21 @@ namespace localGpt.App.Logging
                     .Enrich.WithMachineName()
                     .Enrich.WithEnvironmentUserName()
                     .WriteTo.Debug()
-                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-                    .WriteTo.File(
-                        Path.Combine(logsDirectory, "log-.ndjson"),
+                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+
+                // Add file logging if path is specified
+                if (!string.IsNullOrEmpty(logFilePath))
+                {
+                    loggerConfiguration.WriteTo.File(
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, logFilePath),
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
                         formatProvider: null,
-                        fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB
-                        retainedFileCountLimit: 31) // Keep logs for a month
-                    .CreateLogger();
+                        fileSizeLimitBytes: loggingSettings.FileSizeLimitBytes,
+                        retainedFileCountLimit: loggingSettings.RetainedFileCountLimit);
+                }
+
+                Log.Logger = loggerConfiguration.CreateLogger();
 
                 _isInitialized = true;
 
@@ -201,6 +216,25 @@ namespace localGpt.App.Logging
                 Console.Error.WriteLine($"Failed to log fatal error with exception: {ex.Message}");
                 Console.Error.WriteLine($"Original exception: {exception.Message}");
             }
+        }
+
+        /// <summary>
+        /// Parses a log level string to a LogEventLevel.
+        /// </summary>
+        /// <param name="levelString">The log level string</param>
+        /// <returns>The LogEventLevel</returns>
+        private static LogEventLevel ParseLogLevel(string levelString)
+        {
+            return levelString?.ToLower() switch
+            {
+                "verbose" => LogEventLevel.Verbose,
+                "debug" => LogEventLevel.Debug,
+                "information" => LogEventLevel.Information,
+                "warning" => LogEventLevel.Warning,
+                "error" => LogEventLevel.Error,
+                "fatal" => LogEventLevel.Fatal,
+                _ => LogEventLevel.Information
+            };
         }
     }
 }

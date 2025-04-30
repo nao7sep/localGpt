@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using localGpt.App.Configuration;
 using localGpt.App.Logging;
 using System;
 using System.Threading.Tasks;
@@ -15,7 +16,10 @@ class Program
     {
         try
         {
-            // Initialize logging as early as possible
+            // Initialize configuration as early as possible
+            var config = ConfigurationManager.Instance;
+
+            // Initialize logging using the configuration
             Logger.Initialize();
             Logger.Information("Application starting");
 

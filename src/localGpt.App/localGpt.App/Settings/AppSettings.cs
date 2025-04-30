@@ -1,3 +1,4 @@
+using localGpt.App.Configuration;
 using localGpt.App.Logging;
 using System;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 namespace localGpt.App.Settings
 {
     /// <summary>
-    /// Represents the application settings.
+    /// Represents the user-specific application settings.
     /// </summary>
     public class AppSettings
     {
@@ -17,7 +18,7 @@ namespace localGpt.App.Settings
 
         private static readonly string SettingsFilePath = Path.Combine(
             SettingsDirectory,
-            "settings.json");
+            "user-settings.json");
 
         private static AppSettings? _instance;
 
@@ -29,7 +30,7 @@ namespace localGpt.App.Settings
         /// <summary>
         /// Gets or sets the language code.
         /// </summary>
-        public string Language { get; set; } = "en-us";
+        public string Language { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the last opened directory.
@@ -42,6 +43,22 @@ namespace localGpt.App.Settings
         public string? LastSelectedModel { get; set; }
 
         /// <summary>
+        /// Gets the effective language, falling back to the default if not set.
+        /// </summary>
+        public string EffectiveLanguage =>
+            !string.IsNullOrEmpty(Language)
+                ? Language
+                : ConfigurationManager.Instance.AppConfig.AppSettings.DefaultLanguage;
+
+        /// <summary>
+        /// Gets the effective model, falling back to the default if not set.
+        /// </summary>
+        public string EffectiveModel =>
+            !string.IsNullOrEmpty(LastSelectedModel)
+                ? LastSelectedModel
+                : ConfigurationManager.Instance.AppConfig.AppSettings.DefaultModel;
+
+        /// <summary>
         /// Loads the settings from the settings file.
         /// </summary>
         /// <returns>The loaded settings or default settings if the file doesn't exist.</returns>
@@ -49,7 +66,7 @@ namespace localGpt.App.Settings
         {
             return ExceptionHandler.Execute(() =>
             {
-                Logger.Information("Loading application settings from: {Path}", SettingsFilePath);
+                Logger.Information("Loading user settings from: {Path}", SettingsFilePath);
 
                 if (File.Exists(SettingsFilePath))
                 {
@@ -58,18 +75,24 @@ namespace localGpt.App.Settings
 
                     if (settings != null)
                     {
-                        Logger.Information("Settings loaded successfully");
+                        Logger.Information("User settings loaded successfully");
                         return settings;
                     }
 
-                    Logger.Warning("Settings file exists but could not be deserialized");
+                    Logger.Warning("User settings file exists but could not be deserialized");
                 }
                 else
                 {
-                    Logger.Information("Settings file not found, using defaults");
+                    Logger.Information("User settings file not found, using defaults");
                 }
 
-                return new AppSettings();
+                // Initialize with defaults from app config
+                var appConfig = ConfigurationManager.Instance.AppConfig;
+                return new AppSettings
+                {
+                    Language = appConfig.AppSettings.DefaultLanguage,
+                    LastSelectedModel = appConfig.AppSettings.DefaultModel
+                };
             }, "AppSettings.Load", new AppSettings());
         }
 
@@ -81,7 +104,7 @@ namespace localGpt.App.Settings
         {
             await ExceptionHandler.ExecuteAsync(async () =>
             {
-                Logger.Information("Saving application settings to: {Path}", SettingsFilePath);
+                Logger.Information("Saving user settings to: {Path}", SettingsFilePath);
 
                 // Ensure the directory exists
                 if (!Directory.Exists(SettingsDirectory))
@@ -93,7 +116,7 @@ namespace localGpt.App.Settings
                 var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(SettingsFilePath, json);
 
-                Logger.Information("Settings saved successfully");
+                Logger.Information("User settings saved successfully");
             }, "AppSettings.SaveAsync");
         }
     }
