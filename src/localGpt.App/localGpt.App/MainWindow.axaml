@@ -2,8 +2,127 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:localGpt.App.Localization"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="localGpt.App.MainWindow"
-        Title="localGpt.App">
-    Welcome to Avalonia!
+        Title="{local:Localize Key=app.title}"
+        Width="800" Height="600">
+
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Width" Value="150" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+        <!-- Menu -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{local:Localize Key=menu.file}">
+                <MenuItem Header="{local:Localize Key=menu.file.new}" HotKey="Ctrl+N" />
+                <MenuItem Header="{local:Localize Key=menu.file.open}" HotKey="Ctrl+O" />
+                <MenuItem Header="{local:Localize Key=menu.file.save}" HotKey="Ctrl+S" />
+                <MenuItem Header="{local:Localize Key=menu.file.saveAs}" HotKey="Ctrl+Shift+S" />
+                <Separator />
+                <MenuItem Header="{local:Localize Key=menu.file.exit}" />
+            </MenuItem>
+            <MenuItem Header="{local:Localize Key=menu.edit}">
+                <MenuItem Header="{local:Localize Key=menu.edit.copy}" />
+                <MenuItem Header="{local:Localize Key=menu.edit.paste}" />
+                <MenuItem Header="{local:Localize Key=menu.edit.delete}" />
+                <MenuItem Header="{local:Localize Key=menu.edit.regenerate}" HotKey="Ctrl+R" />
+            </MenuItem>
+            <MenuItem Header="{local:Localize Key=menu.view}">
+                <MenuItem Header="{local:Localize Key=menu.view.toggleModelPane}" />
+                <MenuItem Header="{local:Localize Key=menu.view.toggleParameterPane}" />
+                <MenuItem Header="{local:Localize Key=menu.view.toggleMetaInfo}" />
+            </MenuItem>
+            <MenuItem Header="{local:Localize Key=menu.tools}">
+                <MenuItem Header="{local:Localize Key=menu.tools.search}" />
+                <MenuItem Header="{local:Localize Key=menu.tools.tokenPriceChart}" />
+                <MenuItem Header="{local:Localize Key=menu.tools.htmlExport}" />
+            </MenuItem>
+            <MenuItem Header="{local:Localize Key=menu.settings}">
+                <MenuItem Header="{local:Localize Key=menu.settings.modelManager}" />
+                <MenuItem Header="{local:Localize Key=menu.settings.language}" Click="OnLanguageSettingsClick" />
+            </MenuItem>
+            <MenuItem Header="{local:Localize Key=menu.help}">
+                <MenuItem Header="{local:Localize Key=menu.help.about}" />
+                <MenuItem Header="{local:Localize Key=menu.help.shortcuts}" />
+                <MenuItem Header="{local:Localize Key=menu.help.openConfigFolder}" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Toolbar -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
+            <ComboBox x:Name="ModelSelector" Width="200" />
+            <CheckBox Content="{local:Localize Key=label.search}" Margin="10,0,0,0" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Status Bar -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="5" Height="30">
+            <TextBlock Text="{local:Localize Key=status.totalPromptTokens}" Margin="5,0" />
+            <TextBlock Text="0" Margin="0,0,15,0" />
+
+            <TextBlock Text="{local:Localize Key=status.totalCompletionTokens}" Margin="5,0" />
+            <TextBlock Text="0" Margin="0,0,15,0" />
+
+            <TextBlock Text="{local:Localize Key=status.promptCost}" Margin="5,0" />
+            <TextBlock Text="$0.00" Margin="0,0,15,0" />
+
+            <TextBlock Text="{local:Localize Key=status.completionCost}" Margin="5,0" />
+            <TextBlock Text="$0.00" Margin="0,0,15,0" />
+
+            <TextBlock Text="{local:Localize Key=status.totalCost}" Margin="5,0" />
+            <TextBlock Text="$0.00" Margin="0,0,15,0" />
+        </StackPanel>
+
+        <!-- Main Content -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Message Area -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Non-Archived Messages -->
+                <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Margin="5">
+                    <ScrollViewer>
+                        <StackPanel x:Name="NonArchivedMessages" />
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Archived Messages -->
+                <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="5">
+                    <ScrollViewer>
+                        <StackPanel x:Name="ArchivedMessages" />
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- Input Area -->
+            <Grid Grid.Row="1" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" Height="80" AcceptsReturn="True" Watermark="Type your message here..." />
+                <Button Grid.Column="1" Content="{local:Localize Key=button.send}" VerticalAlignment="Bottom" />
+            </Grid>
+        </Grid>
+    </DockPanel>
 </Window>
