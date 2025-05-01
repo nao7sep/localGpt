@@ -20,10 +20,6 @@ sealed class Program
         var host = CreateHostBuilder(args).Build();
         App.ServiceProvider = host.Services;
 
-        var logger = host.Services.GetRequiredService<ILogger<Program>>();
-        var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
-        logger.LogInformation("Logging to directory: {LogDirectory}", Path.GetFullPath(logDirectory));
-
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }

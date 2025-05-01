@@ -98,7 +98,18 @@ public class JsonLocalizationService : ILocalizationService
         {
             _logger.LogWarning("Attempted to set unsupported culture: {CultureName}. Supported: {SupportedCultures}",
                 cultureName, string.Join(", ", _localizationOptions.SupportedCultures ?? ["N/A"]));
-            return;
+
+            // Prevent infinite recursion if the default culture itself is somehow not in the supported list
+            if (cultureName == _localizationOptions.DefaultCulture)
+            {
+                _logger.LogError("Default culture '{DefaultCulture}' is not listed as supported. Cannot fall back.", _localizationOptions.DefaultCulture);
+                return;
+            }
+
+            _logger.LogInformation("Falling back to default culture: {DefaultCulture}", _localizationOptions.DefaultCulture);
+            // Recursively call SetCulture with the default culture
+            SetCulture(_localizationOptions.DefaultCulture);
+            return; // Exit after attempting fallback
         }
 
         var newCulture = new CultureInfo(cultureName);

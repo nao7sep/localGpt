@@ -23,7 +23,6 @@
     <ItemGroup>
         <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
-        <!-- Add these lines to copy configuration and localization files -->
         <Content Include="appsettings.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -48,7 +47,6 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-        <!-- Add Serilog Sinks -->
         <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
         <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
