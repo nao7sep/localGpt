@@ -9,24 +9,24 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "localGpt", "src\localGpt.App\localGpt\localGpt.csproj", "{C927DD9E-A48A-9220-D4F0-EF272BD1E224}"
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{4703D494-AEA8-871F-69D9-D0104CDE47F7} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{C927DD9E-A48A-9220-D4F0-EF272BD1E224} = {4703D494-AEA8-871F-69D9-D0104CDE47F7}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {E54818A1-6107-45F1-B015-A463061A86CD}
-	EndGlobalSection
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {C927DD9E-A48A-9220-D4F0-EF272BD1E224}.Release|Any CPU.Build.0 = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+        HideSolutionNode = FALSE
+    EndGlobalSection
+    GlobalSection(NestedProjects) = preSolution
+        {4703D494-AEA8-871F-69D9-D0104CDE47F7} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+        {C927DD9E-A48A-9220-D4F0-EF272BD1E224} = {4703D494-AEA8-871F-69D9-D0104CDE47F7}
+    EndGlobalSection
+    GlobalSection(ExtensibilityGlobals) = postSolution
+        SolutionGuid = {E54818A1-6107-45F1-B015-A463061A86CD}
+    EndGlobalSection
 EndGlobal
