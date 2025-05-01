@@ -43,6 +43,9 @@ public class JsonLocalizationService : ILocalizationService
 
     public string CurrentCultureName => _currentCulture.Name;
 
+    // Add this property implementation
+    public IEnumerable<string> SupportedCultures => _localizationOptions.SupportedCultures ?? Enumerable.Empty<string>();
+
     /// <summary>
     /// Loads the localization strings for the current culture.
     /// </summary>

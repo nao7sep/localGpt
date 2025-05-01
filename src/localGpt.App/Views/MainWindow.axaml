@@ -15,4 +15,29 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{Binding Localizer[menu.file]}"/>
+            <MenuItem Header="{Binding Localizer[menu.edit]}"/>
+            <MenuItem Header="{Binding Localizer[menu.view]}"/>
+            <MenuItem Header="{Binding Localizer[menu.tools]}"/>
+            <MenuItem Header="{Binding Localizer[menu.settings]}"/>
+            <MenuItem Header="{Binding Localizer[menu.help]}"/>
+        </Menu>
+
+        <!-- Main Content Area -->
+        <Panel Margin="10">
+            <!-- Language Selection ComboBox -->
+            <ComboBox ItemsSource="{Binding SupportedCultures}"
+                      SelectedItem="{Binding SelectedCulture}"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      MinWidth="100"/>
+
+            <!-- Other controls will go here -->
+
+        </Panel>
+    </DockPanel>
+
 </Window>

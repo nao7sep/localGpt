@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace localGpt.Services;
 
@@ -29,4 +30,9 @@ public interface ILocalizationService : INotifyPropertyChanged
     /// Gets the current culture name.
     /// </summary>
     string CurrentCultureName { get; }
+
+    /// <summary>
+    /// Gets the list of supported culture names.
+    /// </summary>
+    IEnumerable<string> SupportedCultures { get; }
 }
