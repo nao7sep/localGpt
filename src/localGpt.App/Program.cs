@@ -34,10 +34,22 @@ sealed class Program
                 config.SetBasePath(basePath)
                       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
-            .UseSerilog((context, services, configuration) => configuration
-                .ReadFrom.Configuration(context.Configuration)
-                .ReadFrom.Services(services)
-                .Enrich.FromLogContext())
+            .UseSerilog((context, services, configuration) => {
+                // Construct the absolute path for the log file relative to the app's location
+                var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+                // Ensure the directory exists (optional, Serilog might create it)
+                // Directory.CreateDirectory(logDirectory);
+                var logFilePath = Path.Combine(logDirectory, ".ndjson"); // Serilog adds the date based on rollingInterval
+
+                configuration
+                    .ReadFrom.Configuration(context.Configuration) // Read base config (levels, console sink, enrichers, etc.)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    // Explicitly configure the File sink with the absolute path, overriding appsettings.json path
+                    .WriteTo.File(path: logFilePath, // Use named argument for clarity
+                                  rollingInterval: RollingInterval.Day, // Match appsettings.json
+                                  formatter: new Serilog.Formatting.Compact.CompactJsonFormatter()); // Match appsettings.json
+            })
             .ConfigureServices((context, services) =>
             {
                 // Register Configuration instance
