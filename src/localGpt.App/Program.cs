@@ -4,10 +4,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Serilog;
-using localGpt.ViewModels; // Assuming MainWindowViewModel is here
-using System.IO;
-using System.Globalization;
-using Microsoft.Extensions.Localization;
+using localGpt.ViewModels;
+using localGpt.Services;
+using Microsoft.Extensions.Options;
+using localGpt.Models;
+using Microsoft.Extensions.Logging; // Added for ILogger
+using System.IO; // Added for Path
 
 namespace localGpt;
 
@@ -17,10 +19,17 @@ sealed class Program
     public static void Main(string[] args)
     {
         var host = CreateHostBuilder(args).Build();
-        // Store the service provider for later use in App.axaml.cs
         App.ServiceProvider = host.Services;
 
-        // Configure Avalonia App
+        // Log the log directory path
+        var logger = host.Services.GetRequiredService<ILogger<Program>>();
+        var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+        logger.LogInformation("Logging to directory: {LogDirectory}", Path.GetFullPath(logDirectory));
+        // You could also construct the full expected log file path if needed:
+        // Example: Serilog automatically appends the date (e.g., 'log-yyyyMMdd.ndjson')
+        // var logFilePath = Path.Combine(logDirectory, $"log-{DateTime.Now:yyyyMMdd}.ndjson");
+        // logger.LogInformation("Expected log file path for today: {LogFilePath}", Path.GetFullPath(logFilePath));
+
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
@@ -29,48 +38,35 @@ sealed class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((context, config) =>
             {
-                // Set base path to the application directory
+                // Set base path to the application directory (optional but good practice)
                 var basePath = AppContext.BaseDirectory;
                 config.SetBasePath(basePath)
                       .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
             .UseSerilog((context, services, configuration) => {
-                // Construct the absolute path for the log file relative to the app's location
-                var logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
-                // Ensure the directory exists (optional, Serilog might create it)
-                // Directory.CreateDirectory(logDirectory);
-                var logFilePath = Path.Combine(logDirectory, ".ndjson"); // Serilog adds the date based on rollingInterval
-
+                // Configure Serilog entirely from appsettings.json and services
                 configuration
-                    .ReadFrom.Configuration(context.Configuration) // Read base config (levels, console sink, enrichers, etc.)
-                    .ReadFrom.Services(services)
-                    .Enrich.FromLogContext()
-                    // Explicitly configure the File sink with the absolute path, overriding appsettings.json path
-                    .WriteTo.File(path: logFilePath, // Use named argument for clarity
-                                  rollingInterval: RollingInterval.Day, // Match appsettings.json
-                                  formatter: new Serilog.Formatting.Compact.CompactJsonFormatter()); // Match appsettings.json
+                    .ReadFrom.Configuration(context.Configuration) // Reads sinks, levels, etc. from IConfiguration
+                    .ReadFrom.Services(services)                   // Allows dependency injection into sinks, etc.
+                    .Enrich.FromLogContext();
+                    // Removed manual File sink configuration - rely on appsettings.json
             })
             .ConfigureServices((context, services) =>
             {
                 // Register Configuration instance
                 services.AddSingleton(context.Configuration);
 
-                // Configure Localization
-                services.AddLocalization(options => options.ResourcesPath = "localization");
+                // Configure and register LocalizationOptions
+                services.Configure<LocalizationOptions>(context.Configuration.GetSection("Localization"));
 
-                // Register ViewModels (as Transient or Singleton depending on need)
+                // Register the LocalizationService
+                services.AddSingleton<ILocalizationService, JsonLocalizationService>();
+
+                // Register ViewModels
                 services.AddTransient<MainWindowViewModel>();
                 // Add other ViewModels and Services here
 
-                // Example: Configure supported cultures from appsettings.json
-                var localizationOptions = context.Configuration.GetSection("Localization").Get<LocalizationOptions>()
-                                          ?? new LocalizationOptions { DefaultCulture = "en-US", SupportedCultures = ["en-US", "ja-JP"] };
-
-                CultureInfo.CurrentCulture = new CultureInfo(localizationOptions.DefaultCulture);
-                CultureInfo.CurrentUICulture = new CultureInfo(localizationOptions.DefaultCulture);
-
-                // You might want a service to manage culture switching later
-                services.AddSingleton(localizationOptions);
+                // Removed commented-out direct culture setting and options registration
             });
 
 
@@ -79,14 +75,8 @@ sealed class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            // Remove Avalonia's default LogToTrace if using Serilog for everything
-            // .LogToTrace();
+            // Removed commented-out .LogToTrace()
             .UseSkia(); // Or other rendering backend
 
-    // Helper class for Localization options binding
-    public class LocalizationOptions
-    {
-        public string DefaultCulture { get; set; } = "en-US";
-        public string[] SupportedCultures { get; set; } = ["en-US", "ja-JP"];
-    }
+    // Removed commented-out nested helper class for LocalizationOptions
 }
