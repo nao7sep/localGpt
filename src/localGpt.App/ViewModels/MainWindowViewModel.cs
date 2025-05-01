@@ -23,8 +23,7 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     public ILocalizationService Localizer => _localizer;
-    public IEnumerable<string> SupportedCultures => _localizer.SupportedCultures.Distinct();
-    public string WindowTitle => _localizer["app.title"];
+    public IEnumerable<string> SupportedCultures => _localizer.SupportedCultures;
 
     public string SelectedCulture
     {
@@ -47,7 +46,6 @@ public class MainWindowViewModel : ViewModelBase
                 SelectedCulture = _localizer.CurrentCultureName;
             }
 
-            OnPropertyChanged(nameof(WindowTitle));
             OnPropertyChanged(nameof(Localizer));
         }
     }
