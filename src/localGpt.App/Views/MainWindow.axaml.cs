@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace localGpt.App.Views;
+namespace localGptApp.Views;
 
 public partial class MainWindow : Window
 {

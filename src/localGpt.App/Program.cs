@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace localGpt.App;
+namespace localGptApp;
 
 sealed class Program
 {

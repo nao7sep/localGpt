@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace localGpt.App.ViewModels;
+namespace localGptApp.ViewModels;
 
 public class ViewModelBase : ObservableObject
 {
