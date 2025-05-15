@@ -10,7 +10,7 @@
         <!-- Project Metadata -->
         <AssemblyTitle>localGptApp</AssemblyTitle>
         <Product>localGpt</Product>
-        <Description>A desktop application for interacting with local GPT models</Description>
+        <Description>A cross-platform desktop application (C# / .NET 8 + Avalonia UI) that lets users chat locally with OpenAI's Responses API, manage conversations as Git-friendly JSON files, and keep full control of cost, context, and attachments.</Description>
         <Company>Purrfect Code</Company>
         <Authors>nao7sep</Authors>
         <Copyright>Copyright © 2025</Copyright>
@@ -21,23 +21,20 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.2.7" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.2.7" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.7" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.7" />
+        <PackageReference Include="Avalonia" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics" Version="11.2.7">
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.0">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="../../../pawKit/src/pawKitLib/pawKitLib.csproj" />
     </ItemGroup>
 </Project>
