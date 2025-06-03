@@ -7,23 +7,23 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "localGptApp", "src\localGptApp\localGptApp.csproj", "{9004D154-E0A6-0C56-9266-B7407888854E}"
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9004D154-E0A6-0C56-9266-B7407888854E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9004D154-E0A6-0C56-9266-B7407888854E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9004D154-E0A6-0C56-9266-B7407888854E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9004D154-E0A6-0C56-9266-B7407888854E}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{9004D154-E0A6-0C56-9266-B7407888854E} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5B251366-7AD3-4D72-9AB4-A1A5F6E6EA3D}
-	EndGlobalSection
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {9004D154-E0A6-0C56-9266-B7407888854E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {9004D154-E0A6-0C56-9266-B7407888854E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {9004D154-E0A6-0C56-9266-B7407888854E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {9004D154-E0A6-0C56-9266-B7407888854E}.Release|Any CPU.Build.0 = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(SolutionProperties) = preSolution
+        HideSolutionNode = FALSE
+    EndGlobalSection
+    GlobalSection(NestedProjects) = preSolution
+        {9004D154-E0A6-0C56-9266-B7407888854E} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+    EndGlobalSection
+    GlobalSection(ExtensibilityGlobals) = postSolution
+        SolutionGuid = {5B251366-7AD3-4D72-9AB4-A1A5F6E6EA3D}
+    EndGlobalSection
 EndGlobal
